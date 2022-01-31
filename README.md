@@ -1,2 +1,2 @@
 # PortfolioProjects
-Projects added to my portfolio website
+This repository holds projects that are displayed on my portfolio website.
