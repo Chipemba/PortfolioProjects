@@ -1,19 +1,12 @@
 # import the necessary libraries
-import requests
-import multiprocessing 
 import time
 import pandas as pd 
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from datetime import date
-import codecs
-import sys
-import multiprocessing
-import math
 import concurrent.futures
 
 
@@ -66,7 +59,7 @@ def chunker():
 
     driver=webdriver.Chrome(options=options)
     
-    mainURL = "https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-1/c37l1700272?price=900__3000&size-sqft=600__900"
+    mainURL = "https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-1/c37l1700272?price=2998__3000&size-sqft=600__900"
     
     
     driver.get(mainURL)
@@ -75,10 +68,6 @@ def chunker():
     try:
         numOfPages = driver.find_element(By.XPATH, "//*[@id='base-layout-main-wrapper']/div[4]/div[4]/div[2]/div[3]/div[starts-with(@class, 'sc-63c588db-0')]/div[1]/nav/ul/li[last()-1]/a").text
         
-    #     //*[@id="base-layout-main-wrapper"]/div[4]/div[4]/div[2]/div[3]/div[2]/div[1]/nav/ul
-    # //*[@id="base-layout-main-wrapper"]/div[4]/div[4]/div[2]/div[3]/div[3]/div[1]/nav/ul
-    # #base-layout-main-wrapper > div.sc-fd760fa7-0.hnfPMD > div.sc-71859520-0.iORlYq > div.sc-63c588db-0.fEeWHy > div.sc-63c588db-0.fEeWHy > div.sc-63c588db-0.cPViuC.sc-68931dd3-2.jEGvWu
-    # #base-layout-main-wrapper > div.sc-fd760fa7-0.hnfPMD > div.sc-71859520-0.iORlYq > div.sc-63c588db-0.fEeWHy > div.sc-63c588db-0.fEeWHy > div.sc-63c588db-0.cPViuC.sc-68931dd3-2.jEGvWu
     except Exception as e:
         print(f"Trying to get number of pages: {e}")
     
@@ -86,19 +75,15 @@ def chunker():
     print(f"Num of pages:  {numOfPages}")
     
     start_time = time.time()
-    pages=[f"https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-{i+1}/c37l1700272?price=900__3000&size-sqft=600__900" for i in range(numOfPages)]
+    pages=[f"https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-{i+1}/c37l1700272?price=2998__3000&size-sqft=600__900" for i in range(numOfPages)]
     
     
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         pageListingsResults = executor.map(pageListingsScrapper, pages)
     
-    #time.sleep(20)
-    # print(list(pageListingsResults))
     pageListings=list(pageListingsResults)
-    # print(f"{len(list(pageListings))}")
     time.sleep(20)
-    # print(len(list(pageListingsResults)))
     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
         dataListingsResults = executor.map(dataListingsScrapper, pageListings)
     
@@ -138,7 +123,6 @@ def dataListingsScrapper(pages):
     for currentPage in pages:
         try: 
             driver.get(currentPage.rstrip())
-            # print("opened")
         except Exception as e:
             print(f"Error occurred page ({currentPage}) couldn't open :\n {e}")
         try:
@@ -184,17 +168,14 @@ def dataListingsScrapper(pages):
                 for li_element in ilElem:
                     svg_element = li_element.find_element(By.XPATH,".//*[local-name() = 'svg']")  # Assuming the 'aria-label' is in an SVG tag
                     utility = svg_element.get_attribute('aria-label')
-                    # print(f"li[{index}] utility:", utility)
+            
                 
                 
                     listOfUtilities.append(utility)
             else:
                 utility = ulElem.text
-                # print("tried utility")
-                
             listOfUtilities.append(utility)
         except :
-            # print(f"utilities causing an issue: {e}")
             listOfUtilities = []
         try:
             parking = driver.find_element(By.XPATH, "//*[@id='vip-body']/div[3]/div[2]/div/div/div[1]/ul/li[3]/dl/dd").text
@@ -224,12 +205,10 @@ def dataListingsScrapper(pages):
                 listOfAppliances = []
                 for appliance in appliancesli:
                     applianc = appliance.text
-                    # print(f"trying to print appliances: {applianc}")
                     listOfAppliances.append(applianc)
             else:
                 listOfAppliances = []
         except :
-            # print(f"appliance causing an issue: {e}")
             listOfAppliances = []
         try:
             airCon = driver.find_element(By.XPATH, "//*[@id='vip-body']/div[3]/div[2]/div/div/div[2]/ul/li[4]/dl/dd").text
@@ -246,17 +225,14 @@ def dataListingsScrapper(pages):
                 listOfAmenities = []
                 for amenity in amenitiesLi:
                     amenit = amenity.text
-                    # print(f"printing amenities : {amenit}")
                     listOfAmenities.append(amenit)
             else:
                 listOfAmenities = []
         except :
-            # print(f"amenities causing an issue: {e}")
             listOfAmenities = []
 
         
         collectedDict = {"url": url, "title": title, "address":address, "datePosted":datePosted, "price":price, "propertyType":propertyType, "bedrooms":bedrooms, "bathrooms":bathrooms, "description":description, "utilities":listOfUtilities, "parking":parking, "aggreementType":aggreementType, "petFriendly":petFriendly, "size":size, "furnished":furnished, "appliances":listOfAppliances, "a/c":airCon, "outdoorSpace":outdoorSpace, "amenities":listOfAmenities}
-        # print(sys.getsizeof(collectedDict))
         dataRec.append(collectedDict)
              
     driver.close()
