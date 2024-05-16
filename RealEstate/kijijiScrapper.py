@@ -59,7 +59,7 @@ def chunker():
 
     driver=webdriver.Chrome(options=options)
     
-    mainURL = "https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-1/c37l1700272?price=2998__3000&size-sqft=600__900"
+    mainURL = "https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-1/c37l1700272?price=900__3000&size-sqft=600__900"
     
     
     driver.get(mainURL)
@@ -75,7 +75,7 @@ def chunker():
     print(f"Num of pages:  {numOfPages}")
     
     start_time = time.time()
-    pages=[f"https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-{i+1}/c37l1700272?price=2998__3000&size-sqft=600__900" for i in range(numOfPages)]
+    pages=[f"https://www.kijiji.ca/b-apartments-condos/gta-greater-toronto-area/page-{i+1}/c37l1700272?price=900__3000&size-sqft=600__900" for i in range(numOfPages)]
     
     
     
